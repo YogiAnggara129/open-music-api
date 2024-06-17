@@ -43,33 +43,12 @@ class AlbumsService {
 	}
 
 	async updateAlbum({ id, name, year }) {
-		const updatedAt = new Date().toISOString();
-		let query = "UPDATE albums SET ";
-		const values = [];
-		let index = 1;
+		const query = `UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id`;
+        const result = await this._pool.query(query, [name, year, id]);
 
-		if (id === undefined) {
-			throw new InvariantError("ID album tidak boleh kosong");
-		}
-
-		if (name !== undefined) {
-			query += `name = $${index++}, `;
-			values.push(name);
-		}
-
-		if (year !== undefined) {
-			query += `year = $${index++}, `;
-			values.push(year);
-		}
-
-		query += `updated_at = $${index} WHERE id = $${index + 1} RETURNING id`;
-		values.push(updatedAt, id);
-
-		const result = await this._pool.query(query, values);
-
-		if (result.rows.length === 0) {
-			throw new NotFoundError("Album gagal diupdate");
-		}
+        if (result.rows.length === 0) {
+            throw new NotFoundError("Album gagal diubah");
+        }
 	}
 
 	async deleteAlbum({ id }) {
