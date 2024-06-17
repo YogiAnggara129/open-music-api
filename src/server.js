@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Hapi = require("@hapi/hapi");
 const { pool } = require("./config");
 
@@ -15,8 +16,8 @@ const init = async () => {
 	const songService = new SongsService(pool);
 
 	const server = Hapi.server({
-		port: 5000,
-		host: "localhost",
+		port: process.env.PORT_API,
+		host: process.env.HOST_API,
 		routes: {
 			cors: {
 				origin: ["*"],
