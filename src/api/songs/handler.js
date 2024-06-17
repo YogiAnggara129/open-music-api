@@ -43,6 +43,19 @@ class SongsHandler {
 		return response;
 	}
 
+	async getSongByIdHandler(request, h) {
+		const { id } = request.params;
+        const song = await this._service.getSongById({ id });
+        const response = h.response({
+            status: "success",
+            data: {
+                song,
+            },
+        });
+        response.code(200);
+        return response;
+    }
+
 	async putSongByIdHandler(request, h) {
 		this._validator.validateSongPayload(request.payload);
 		const { id } = request.params;

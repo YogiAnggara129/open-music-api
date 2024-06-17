@@ -1,9 +1,24 @@
-const mapDBToModelAlbum = ({ id, name, year, created_at, updated_at }) => ({
+const mapDBToModelAlbum = ({ id, name, year, songs }) => ({
 	id,
 	name,
 	year,
-	createdAt: new Date(created_at).toISOString(),
-	updatedAt: new Date(updated_at).toISOString(),
+	songs: songs.map(mapDBToModelSongDetail),
 });
 
-module.exports = { mapDBToModelAlbum };
+const mapDBToModelSong = ({ id, title, performer }) => ({
+	id,
+	title,
+	performer,
+});
+
+const mapDBToModelSongDetail = (e) => ({
+	id: e.id,
+	title: e.title,
+	performer: e.performer,
+});
+
+module.exports = {
+	mapDBToModelAlbum,
+	mapDBToModelSong,
+	mapDBToModelSongDetail,
+};

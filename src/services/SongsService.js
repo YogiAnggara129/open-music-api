@@ -1,4 +1,6 @@
 const { nanoid } = require("nanoid");
+const { mapDBToModelSong, mapDBToModelSongDetail } = require("../utils");
+const NotFoundError = require("../exceptions/NotFoundError");
 
 class SongsService {
 	constructor(pool) {
@@ -28,8 +30,18 @@ class SongsService {
 	async getSongs() {
 		const query = `SELECT * FROM songs`;
 		const result = await this._pool.query(query);
-		return result.rows;
-		// return result.rows.map(mapDBToModelSong);
+		return result.rows.map(mapDBToModelSong);
+	}
+
+	async getSongById({ id }) {
+		const query = `SELECT * FROM songs WHERE id = $1`;
+		const result = await this._pool.query(query, [id]);
+
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Lagu tidak ditemukan");
+		}
+
+		return mapDBToModelSongDetail(result.rows[0]);
 	}
 
 	async updateSong({ id, title, year, genre, performer, duration, albumId }) {
@@ -75,8 +87,8 @@ class SongsService {
 		query += `updated_at = $${index} WHERE id = $${index + 1} RETURNING id`;
 		values.push(updatedAt, id);
 		const result = await this._pool.query(query, values);
-		if (!result.rows[0].id) {
-			throw new InvariantError("Lagu gagal diupdate");
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Lagu gagal diupdate");
 		}
 	}
 
@@ -84,8 +96,8 @@ class SongsService {
 		const query = `DELETE FROM songs WHERE id = $1 RETURNING id`;
 		const result = await this._pool.query(query, [id]);
 
-		if (!result.rows[0].id) {
-			throw new InvariantError("Lagu gagal dihapus");
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Lagu gagal dihapus");
 		}
 	}
 }
