@@ -45,8 +45,6 @@ class SongsService {
 			query += ` WHERE ` + whereQueries.join(" AND ");
 		}
 
-		console.log(query, values);
-
 		const result = await this._pool.query(query, values);
 		return result.rows.map(mapDBToModelSong);
 	}
