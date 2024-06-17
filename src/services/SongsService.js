@@ -27,9 +27,27 @@ class SongsService {
 		return result.rows[0].id;
 	}
 
-	async getSongs() {
-		const query = `SELECT * FROM songs`;
-		const result = await this._pool.query(query);
+	async getSongs({ title, performer }) {
+		let query = `SELECT * FROM songs`;
+		let whereQueries = [];
+		const values = [];
+		let index = 1;
+
+		if (title !== undefined) {
+			whereQueries.push(`title ILIKE $${index++}`);
+			values.push(`%${title}%`);
+		}
+		if (performer !== undefined) {
+			whereQueries.push(`performer ILIKE $${index++}`);
+			values.push(`%${performer}%`);
+		}
+		if (whereQueries.length !== 0) {
+			query += ` WHERE ` + whereQueries.join(" AND ");
+		}
+
+		console.log(query, values);
+
+		const result = await this._pool.query(query, values);
 		return result.rows.map(mapDBToModelSong);
 	}
 
