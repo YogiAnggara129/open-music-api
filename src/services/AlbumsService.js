@@ -1,5 +1,6 @@
 const { nanoid } = require("nanoid");
 const { mapDBToModelAlbum } = require("../utils");
+const NotFoundError = require("../exceptions/NotFoundError");
 require("dotenv").config();
 
 class AlbumsService {
@@ -19,11 +20,15 @@ class AlbumsService {
 		return result.rows[0].id;
 	}
 
-	async getAlbums() {
-		const query = `SELECT * FROM albums`;
-		const result = await this._pool.query(query);
+	async getAlbumById({ id }) {
+		const query = `SELECT * FROM albums WHERE id = $1`;
+		const result = await this._pool.query(query, [id]);
 
-		return result.rows.map(mapDBToModelAlbum);
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Album tidak ditemukan");
+		}
+
+		return mapDBToModelAlbum(result.rows[0]);
 	}
 
 	async updateAlbum({ id, name, year }) {
@@ -51,8 +56,8 @@ class AlbumsService {
 
 		const result = await this._pool.query(query, values);
 
-		if (!result.rows[0].id) {
-			throw new InvariantError("Album gagal diupdate");
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Album gagal diupdate");
 		}
 	}
 
@@ -60,8 +65,8 @@ class AlbumsService {
 		const query = `DELETE FROM albums WHERE id = $1 RETURNING id`;
 		const result = await this._pool.query(query, [id]);
 
-		if (!result.rows[0].id) {
-			throw new InvariantError("Album gagal dihapus");
+		if (result.rows.length === 0) {
+			throw new NotFoundError("Album gagal dihapus");
 		}
 	}
 }
