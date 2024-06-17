@@ -63,50 +63,19 @@ class SongsService {
 	}
 
 	async updateSong({ id, title, year, genre, performer, duration, albumId }) {
-		const updatedAt = new Date().toISOString();
-		let query = "UPDATE songs SET ";
-		const values = [];
-		let index = 1;
+		const query = `UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6 WHERE id = $7 RETURNING id`;
+		const result = await this._pool.query(query, [
+			title,
+			year,
+			genre,
+			performer,
+			duration,
+			albumId,
+			id,
+		]);
 
-		if (id === undefined) {
-			throw new InvariantError("ID lagu tidak boleh kosong");
-		}
-
-		if (title !== undefined) {
-			query += `title = $${index++}, `;
-			values.push(title);
-		}
-
-		if (year !== undefined) {
-			query += `year = $${index++}, `;
-			values.push(year);
-		}
-
-		if (genre !== undefined) {
-			query += `genre = $${index++}, `;
-			values.push(genre);
-		}
-
-		if (performer !== undefined) {
-			query += `performer = $${index++}, `;
-			values.push(performer);
-		}
-
-		if (duration !== undefined) {
-			query += `duration = $${index++}, `;
-			values.push(duration);
-		}
-
-		if (albumId !== undefined) {
-			query += `album_id = $${index++}, `;
-			values.push(albumId);
-		}
-
-		query += `updated_at = $${index} WHERE id = $${index + 1} RETURNING id`;
-		values.push(updatedAt, id);
-		const result = await this._pool.query(query, values);
 		if (result.rows.length === 0) {
-			throw new NotFoundError("Lagu gagal diupdate");
+			throw new NotFoundError("Lagu gagal diubah");
 		}
 	}
 
