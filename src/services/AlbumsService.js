@@ -27,7 +27,7 @@ class AlbumsService {
 	}
 
 	async updateAlbum({ id, name, year }) {
-		const updatedAt = new Date().toISOString(); // Menggunakan ISO string untuk konsistensi dengan PostgreSQL TIMESTAMP
+		const updatedAt = new Date().toISOString();
 		let query = "UPDATE albums SET ";
 		const values = [];
 		let index = 1;

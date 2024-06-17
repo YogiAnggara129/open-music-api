@@ -1,15 +1,21 @@
 const Hapi = require("@hapi/hapi");
+const { pool } = require("./config");
 
 const albums = require("./api/albums");
 const AlbumsService = require("./services/AlbumsService");
 const AlbumsValidator = require("./validator/albums");
-const { pool } = require("./config");
+
+const songs = require("./api/songs");
+const SongsService = require("./services/SongsService");
+const SongsValidator = require("./validator/songs");
+const ClientError = require("./exceptions/ClientError");
 
 const init = async () => {
 	const albumsService = new AlbumsService(pool);
+	const songService = new SongsService(pool);
 
 	const server = Hapi.server({
-		port: 3000,
+		port: 5000,
 		host: "localhost",
 		routes: {
 			cors: {
@@ -26,6 +32,13 @@ const init = async () => {
 				validator: AlbumsValidator,
 			},
 		},
+		{
+			plugin: songs,
+			options: {
+				service: songService,
+				validator: SongsValidator,
+			},
+		},
 	]);
 
 	server.ext("onPreResponse", (request, h) => {
@@ -33,6 +46,7 @@ const init = async () => {
 		const { response } = request;
 
 		if (response instanceof Error) {
+			console.log("ERROR: " + response.message);
 			// penanganan client error secara internal.
 			if (response instanceof ClientError) {
 				const newResponse = h.response({
