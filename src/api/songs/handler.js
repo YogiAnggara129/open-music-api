@@ -2,15 +2,15 @@ const autoBind = require('auto-bind');
 
 class SongsHandler {
   constructor(service, validator) {
-    this.service = service;
-    this.validator = validator;
+    this._service = service;
+    this._validator = validator;
     autoBind(this);
   }
 
   async postSongHandler(request, h) {
-    this.validator.validateSongPayload(request.payload);
+    this._validator.validateSongPayload(request.payload);
 
-    const id = await this.service.addSong(request.payload);
+    const id = await this._service.addSong(request.payload);
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil ditambahkan',
@@ -23,9 +23,9 @@ class SongsHandler {
   }
 
   async getSongsHandler(request, h) {
-    this.validator.validateSongQuery(request.payload);
+    this._validator.validateSongQuery(request.payload);
     const { title, performer } = request.query;
-    const songs = await this.service.getSongs({ title, performer });
+    const songs = await this._service.getSongs({ title, performer });
     const response = h.response({
       status: 'success',
       data: {
@@ -38,7 +38,7 @@ class SongsHandler {
 
   async getSongByIdHandler(request, h) {
     const { id } = request.params;
-    const song = await this.service.getSongById({ id });
+    const song = await this._service.getSongById({ id });
     const response = h.response({
       status: 'success',
       data: {
@@ -50,13 +50,13 @@ class SongsHandler {
   }
 
   async putSongByIdHandler(request, h) {
-    this.validator.validateSongPayload(request.payload);
+    this._validator.validateSongPayload(request.payload);
     const { id } = request.params;
     const {
       title, year, genre, performer, duration, albumId,
     } = request.payload;
 
-    await this.service.updateSong({
+    await this._service.updateSong({
       id,
       title,
       year,
@@ -75,7 +75,7 @@ class SongsHandler {
 
   async deleteSongByIdHandler(request, h) {
     const { id } = request.params;
-    await this.service.deleteSong({ id });
+    await this._service.deleteSong({ id });
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil dihapus',

@@ -8,20 +8,6 @@ const mapDBToModelSong = (e) => ({
   albumId: e.album_id,
 });
 
-const Logger = {
-  log: (message) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(message);
-    }
-  },
-  error: (message) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(`ERROR: ${message}`);
-    }
-  },
-};
-
 module.exports = {
   mapDBToModelSong,
-  Logger,
 };

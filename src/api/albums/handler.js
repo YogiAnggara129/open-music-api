@@ -2,16 +2,16 @@ const autoBind = require('auto-bind');
 
 class AlbumsHandler {
   constructor(service, validator) {
-    this.service = service;
-    this.validator = validator;
+    this._service = service;
+    this._validator = validator;
     autoBind(this);
   }
 
   async postAlbumHandler(request, h) {
-    this.validator.validateAlbumPayload(request.payload);
+    this._validator.validateAlbumPayload(request.payload);
     const { name, year } = request.payload;
 
-    const id = await this.service.addAlbum({ name, year });
+    const id = await this._service.addAlbum({ name, year });
     const response = h.response({
       status: 'success',
       message: 'Album berhasil ditambahkan',
@@ -24,7 +24,7 @@ class AlbumsHandler {
   }
 
   async getAlbumsHandler(request, h) {
-    const albums = await this.service.getAlbums();
+    const albums = await this._service.getAlbums();
     const response = h.response({
       status: 'success',
       data: {
@@ -37,7 +37,7 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const album = await this.service.getAlbumById({ id });
+    const album = await this._service.getAlbumById({ id });
     const response = h.response({
       status: 'success',
       data: {
@@ -49,11 +49,11 @@ class AlbumsHandler {
   }
 
   async putAlbumByIdHandler(request, h) {
-    this.validator.validateAlbumPayload(request.payload);
+    this._validator.validateAlbumPayload(request.payload);
     const { id } = request.params;
     const { name, year } = request.payload;
 
-    await this.service.updateAlbum({ id, name, year });
+    await this._service.updateAlbum({ id, name, year });
     const response = h.response({
       status: 'success',
       message: 'Album berhasil diubah',
@@ -64,7 +64,7 @@ class AlbumsHandler {
 
   async deleteAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    await this.service.deleteAlbum({ id });
+    await this._service.deleteAlbum({ id });
     const response = h.response({
       status: 'success',
       message: 'Album berhasil dihapus',

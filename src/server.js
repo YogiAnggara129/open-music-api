@@ -1,6 +1,5 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
-const { pool } = require('./config');
 
 const albums = require('./api/albums');
 const AlbumsService = require('./services/AlbumsService');
@@ -10,11 +9,10 @@ const songs = require('./api/songs');
 const SongsService = require('./services/SongsService');
 const SongsValidator = require('./validator/songs');
 const ClientError = require('./exceptions/ClientError');
-const { Logger } = require('./utils');
 
 const init = async () => {
-  const albumsService = new AlbumsService(pool);
-  const songService = new SongsService(pool);
+  const albumsService = new AlbumsService();
+  const songService = new SongsService();
 
   const server = Hapi.server({
     host: process.env.HOST_API,
@@ -48,7 +46,7 @@ const init = async () => {
     const { response } = request;
 
     if (response instanceof Error) {
-      Logger.error(response.message);
+      console.error(response.message);
       // penanganan client error secara internal.
       if (response instanceof ClientError) {
         const newResponse = h.response({
@@ -78,7 +76,7 @@ const init = async () => {
   });
 
   await server.start();
-  Logger.log(`Server berjalan pada ${server.info.uri}`);
+  console.log(`Server berjalan pada ${server.info.uri}`);
 };
 
 init();
