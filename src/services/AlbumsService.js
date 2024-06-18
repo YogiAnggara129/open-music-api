@@ -1,5 +1,4 @@
 const { nanoid } = require('nanoid');
-const { mapDBToModelAlbum } = require('../utils');
 const NotFoundError = require('../exceptions/NotFoundError');
 const InvariantError = require('../exceptions/InvariantError');
 require('dotenv').config();
@@ -22,10 +21,10 @@ class AlbumsService {
   }
 
   async getAlbumById({ id }) {
-    const albumQuery = 'SELECT * FROM albums WHERE id = $1';
+    const albumQuery = 'SELECT id, name, year FROM albums WHERE id = $1';
     const albumResultAsync = this.pool.query(albumQuery, [id]);
 
-    const songsQuery = 'SELECT * FROM songs WHERE album_id = $1';
+    const songsQuery = 'SELECT id, title, performer FROM songs WHERE album_id = $1';
     const songsResultAsync = this.pool.query(songsQuery, [id]);
 
     const [albumResult, songsResult] = await Promise.all([
@@ -37,10 +36,10 @@ class AlbumsService {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    return mapDBToModelAlbum({
+    return {
       ...albumResult.rows[0],
       songs: songsResult.rows,
-    });
+    };
   }
 
   async updateAlbum({ id, name, year }) {

@@ -1,5 +1,5 @@
 const { nanoid } = require('nanoid');
-const { mapDBToModelSong, mapDBToModelSongDetail } = require('../utils');
+const { mapDBToModelSong } = require('../utils');
 const NotFoundError = require('../exceptions/NotFoundError');
 const InvariantError = require('../exceptions/InvariantError');
 
@@ -31,7 +31,7 @@ class SongsService {
   }
 
   async getSongs({ title, performer }) {
-    let query = 'SELECT * FROM songs';
+    let query = 'SELECT id, title, performer FROM songs';
     const whereQueries = [];
     const values = [];
     let index = 1;
@@ -51,7 +51,7 @@ class SongsService {
     }
 
     const result = await this.pool.query(query, values);
-    return result.rows.map(mapDBToModelSong);
+    return result.rows;
   }
 
   async getSongById({ id }) {
@@ -62,7 +62,7 @@ class SongsService {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
 
-    return mapDBToModelSongDetail(result.rows[0]);
+    return mapDBToModelSong(result.rows[0]);
   }
 
   async updateSong({
