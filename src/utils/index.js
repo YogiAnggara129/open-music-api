@@ -1,3 +1,5 @@
+const InvariantError = require('../exceptions/InvariantError');
+
 const mapDBToModelSong = (e) => ({
   id: e.id,
   title: e.title,
@@ -8,6 +10,14 @@ const mapDBToModelSong = (e) => ({
   albumId: e.album_id,
 });
 
+const validateData = (payload, schema) => {
+  const validationResult = schema.validate(payload);
+  if (validationResult.error) {
+    throw new InvariantError(validationResult.error.message);
+  }
+};
+
 module.exports = {
   mapDBToModelSong,
+  validateData,
 };
