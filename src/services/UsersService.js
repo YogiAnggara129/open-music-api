@@ -18,7 +18,7 @@ class UsersService {
   }
 
   async verifyUserCredential({ username, password }) {
-    const query = 'SELECT password FROM users WHERE username = $1';
+    const query = 'SELECT id, password FROM users WHERE username = $1';
     const result = await this._pool.query(query, [username]);
 
     if (result.rows.length === 0) {
@@ -31,7 +31,7 @@ class UsersService {
       throw new InvariantError('Kredensial yang anda berikan salah');
     }
 
-    return result.rows[0].password;
+    return result.rows[0].id;
   }
 
   async addUser({ username, password, fullname }) {
