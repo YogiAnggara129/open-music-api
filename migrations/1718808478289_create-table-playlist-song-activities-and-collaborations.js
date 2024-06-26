@@ -1,15 +1,10 @@
 /**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-exports.shorthands = undefined;
-
-/**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.createTable('playlist_song_activitites', {
+  pgm.createTable('playlist_song_activities', {
     id: {
       type: 'VARCHAR(50)',
       primaryKey: true,
@@ -67,6 +62,10 @@ exports.up = (pgm) => {
       onUpdate: 'CASCADE',
     },
   });
+
+  pgm.addConstraint('collaborations', 'unique-collaborations-playlist_id-user_id', {
+    unique: ['playlist_id', 'user_id'],
+  });
 };
 
 /**
@@ -75,6 +74,8 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
+  pgm.dropConstraint('collaborations', 'unique-collaborations-playlist_id-user_id');
+
   pgm.dropTable('collaborations');
-  pgm.dropTable('playlist_song_activitites');
+  pgm.dropTable('playlist_song_activities');
 };

@@ -13,6 +13,7 @@ exports.up = (pgm) => {
     username: {
       type: 'TEXT',
       notNull: true,
+      unique: true,
     },
     password: {
       type: 'TEXT',
@@ -62,6 +63,13 @@ exports.up = (pgm) => {
       onUpdate: 'CASCADE',
     },
   });
+
+  pgm.addConstraint('playlists', 'unique-playlists-name-owner', {
+    unique: ['name', 'owner'],
+  });
+  pgm.addConstraint('playlist_songs', 'unique-playlist_songs-playlist_id-song_id', {
+    unique: ['playlist_id', 'song_id'],
+  });
 };
 
 /**
@@ -70,6 +78,9 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
+  pgm.dropConstraint('playlist_songs', 'unique-playlist_songs-playlist_id-song_id');
+  pgm.dropConstraint('playlists', 'unique-playlists-name-owner');
+
   pgm.dropTable('playlist_songs');
   pgm.dropTable('playlists');
   pgm.dropTable('users');

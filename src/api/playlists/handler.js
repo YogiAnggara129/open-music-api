@@ -1,8 +1,11 @@
 const autoBind = require('auto-bind');
+const { PlaylistRole } = require('../../utils');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor({ playlistsService, playlistSongsService, validator }) {
+    this._playlistsService = playlistsService;
+    this._playlistSongsService = playlistSongsService;
     this._validator = validator;
     autoBind(this);
   }
@@ -13,7 +16,10 @@ class PlaylistHandler {
     const { name } = request.payload;
     const { id: owner } = request.auth.credentials;
 
-    const playlistId = await this._service.addPlaylist({ name, owner });
+    const playlistId = await this._playlistsService.addPlaylist({
+      name,
+      owner,
+    });
     const response = h.response({
       status: 'success',
       data: {
@@ -26,8 +32,8 @@ class PlaylistHandler {
   }
 
   async getPlaylistsHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const playlists = await this._service.getPlaylists({ owner });
+    const { id: userId } = request.auth.credentials;
+    const playlists = await this._playlistsService.getPlaylists({ userId });
     const response = h.response({
       status: 'success',
       data: {
@@ -41,8 +47,16 @@ class PlaylistHandler {
 
   async deletePlaylistHandler(request, h) {
     const { id } = request.params;
-    const { id: owner } = request.auth.credentials;
-    await this._service.deletePlaylistById({ id, owner });
+    const { id: userId } = request.auth.credentials;
+    const role = await this._playlistsService.getRole({ id, userId });
+    if (role !== PlaylistRole.owner) {
+      throw new AuthorizationError(
+        'Kolaborator tidak dapat menghapus playlist',
+      );
+    } else if (role === null) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+    await this._playlistsService.deletePlaylistById({ id });
     const response = h.response({
       status: 'success',
       message: 'Playlist berhasil dihapus',
@@ -53,10 +67,17 @@ class PlaylistHandler {
   }
 
   async postPlaylistSongsHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
+    this._validator.validatePostPlaylistSongPayload(request.payload);
+
+    const { id: userId } = request.auth.credentials;
     const { id } = request.params;
+    const role = await this._playlistsService.getRole({ id, userId });
+    if (role !== PlaylistRole.owner && role !== PlaylistRole.collaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+
     const { songId } = request.payload;
-    await this._service.postPlaylistSongsById({ id, songId, owner });
+    await this._playlistSongsService.postPlaylistSongsById({ id, songId, userId });
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil ditambahkan ke playlist',
@@ -68,8 +89,14 @@ class PlaylistHandler {
 
   async getPlaylistSongsHandler(request, h) {
     const { id } = request.params;
-    const { id: owner } = request.auth.credentials;
-    const playlist = await this._service.getPlaylistSongsById({ id, owner });
+    const { id: userId } = request.auth.credentials;
+    const playlist = await this._playlistSongsService.getPlaylistSongsById({
+      id,
+    });
+    const role = await this._playlistsService.getRole({ id, userId });
+    if (role !== PlaylistRole.owner && role !== PlaylistRole.collaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
     const response = h.response({
       status: 'success',
       data: {
@@ -83,15 +110,39 @@ class PlaylistHandler {
 
   async deletePlaylistSongsHandler(request, h) {
     const { id } = request.params;
-    const { id: owner } = request.auth.credentials;
+    const { id: userId } = request.auth.credentials;
+    const role = await this._playlistsService.getRole({ id, userId });
+    if (role !== PlaylistRole.owner && role !== PlaylistRole.collaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+
     const { songId } = request.payload;
-    await this._service.deletePlaylistSongsById({ id, songId, owner });
+    await this._playlistSongsService.deletePlaylistSongsById({ id, songId, userId });
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil dihapus dari playlist',
     });
-    response.code(201);
+    response.code(200);
+    return response;
+  }
 
+  async getPlaylistSongActivitiesHandler(request, h) {
+    const { id } = request.params;
+    const { id: userId } = request.auth.credentials;
+    const role = await this._playlistsService.getRole({ id, userId });
+    if (role !== PlaylistRole.owner && role !== PlaylistRole.collaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+
+    const activities = await this._playlistSongsService.getPlaylistSongActivitiesById({ id });
+    const response = h.response({
+      status: 'success',
+      data: {
+        playlistId: id,
+        activities,
+      },
+    });
+    response.code(200);
     return response;
   }
 }

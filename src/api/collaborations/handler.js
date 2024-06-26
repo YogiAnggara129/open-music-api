@@ -1,4 +1,6 @@
 const autoBind = require('auto-bind');
+const { PlaylistRole } = require('../../utils');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class CollaborationsHandler {
   constructor({ collaborationsService, playlistsService, validator }) {
@@ -13,12 +15,19 @@ class CollaborationsHandler {
 
     const { playlistId, userId } = request.payload;
     const { id: owner } = request.auth.credentials;
-    await this._playlistsService.verifyPlaylistAvailableById({ id: playlistId, owner });
-    await this._collaborationsService.addCollaboration({ playlistId, userId });
+    const role = await this._playlistsService.getRole({ id: playlistId, userId: owner });
+    if (role !== PlaylistRole.owner) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+
+    const id = await this._collaborationsService.addCollaboration({ playlistId, userId });
 
     const response = h.response({
       status: 'success',
       message: 'Kolaborator playlist berhasil ditambahkan',
+      data: {
+        collaborationId: id,
+      },
     });
     response.code(201);
     return response;
@@ -29,8 +38,17 @@ class CollaborationsHandler {
 
     const { playlistId, userId } = request.payload;
     const { id: owner } = request.auth.credentials;
-    await this._playlistsService.verifyPlaylistAvailableById({ id: playlistId, owner });
-    await this._collaborationsService.deleteCollaboration({ playlistId, userId });
+    const role = await this._playlistsService.getRole({
+      id: playlistId,
+      userId: owner,
+    });
+    if (role !== PlaylistRole.owner) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+    await this._collaborationsService.deleteCollaboration({
+      playlistId,
+      userId,
+    });
 
     const response = h.response({
       status: 'success',

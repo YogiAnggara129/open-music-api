@@ -17,7 +17,13 @@ const validateData = (payload, schema) => {
   }
 };
 
+const PlaylistRole = {
+  owner: 'owner',
+  collaborator: 'collaborator',
+};
+
 module.exports = {
   mapDBToModelSong,
   validateData,
+  PlaylistRole,
 };

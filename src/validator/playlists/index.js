@@ -6,9 +6,9 @@ const PlaylistsValidator = {
     payload,
     schema.PostPlaylistPayloadSchema,
   ),
-  validatePostPlaylistSongsPayload: (payload) => validateData(
+  validatePostPlaylistSongPayload: (payload) => validateData(
     payload,
-    schema.PostPlaylistSongsPayloadSchema,
+    schema.PostPlaylistSongPayloadSchema,
   ),
 };
 

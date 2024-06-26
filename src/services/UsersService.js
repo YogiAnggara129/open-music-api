@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const InvariantError = require('../exceptions/InvariantError');
+const AuthenticationError = require('../exceptions/AuthenticationError');
 
 class UsersService {
   constructor() {
@@ -22,13 +23,13 @@ class UsersService {
     const result = await this._pool.query(query, [username]);
 
     if (result.rows.length === 0) {
-      throw new InvariantError('Kredensial yang anda berikan salah');
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
 
     const isPasswordValid = await bcrypt.compare(password, result.rows[0].password);
 
     if (!isPasswordValid) {
-      throw new InvariantError('Kredensial yang anda berikan salah');
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
 
     return result.rows[0].id;

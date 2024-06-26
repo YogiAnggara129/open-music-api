@@ -22,6 +22,7 @@ const SongsValidator = require('./validator/songs');
 
 const playlists = require('./api/playlists');
 const PlaylistsService = require('./services/PlaylistsService');
+const PlaylistSongsService = require('./services/PlaylistSongsService');
 const PlaylistsValidator = require('./validator/playlists');
 
 const collaborations = require('./api/collaborations');
@@ -36,6 +37,7 @@ const init = async () => {
   const albumsService = new AlbumsService();
   const songService = new SongsService();
   const playlistsService = new PlaylistsService();
+  const playlistSongsService = new PlaylistSongsService();
   const collaborationsService = new CollaborationsService();
 
   const server = Hapi.server({
@@ -105,10 +107,7 @@ const init = async () => {
     },
     {
       plugin: playlists,
-      options: {
-        service: playlistsService,
-        validator: PlaylistsValidator,
-      },
+      options: { playlistsService, playlistSongsService, validator: PlaylistsValidator },
     },
     {
       plugin: collaborations,
@@ -123,9 +122,8 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
-
     if (response instanceof Error) {
-      console.error(`ERROR: ${response.message}`);
+      console.error(`ERROR: ${response.message} > [${request.method}] ${request.url.href} - ${response.statusCode}`);
       // penanganan client error secara internal.
       if (response instanceof ClientError) {
         const newResponse = h.response({
