@@ -33,7 +33,7 @@ class AlbumsService {
       songsResultAsync,
     ]);
 
-    if (albumResult.rows.length === 0) {
+    if (!albumResult.rowCount) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
@@ -47,7 +47,7 @@ class AlbumsService {
     const query = 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id';
     const result = await this._pool.query(query, [name, year, id]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album gagal diubah');
     }
   }
@@ -56,7 +56,7 @@ class AlbumsService {
     const query = 'DELETE FROM albums WHERE id = $1 RETURNING id';
     const result = await this._pool.query(query, [id]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus');
     }
   }

@@ -13,7 +13,7 @@ class UsersService {
     const query = 'SELECT username FROM users WHERE username = $1';
     const result = await this._pool.query(query, [username]);
 
-    if (result.rows.length > 0) {
+    if (result.rowCount > 0) {
       throw new InvariantError('Username telah digunakan');
     }
   }
@@ -22,11 +22,14 @@ class UsersService {
     const query = 'SELECT id, password FROM users WHERE username = $1';
     const result = await this._pool.query(query, [username]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, result.rows[0].password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      result.rows[0].password,
+    );
 
     if (!isPasswordValid) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah');
@@ -44,9 +47,10 @@ class UsersService {
       id,
       username,
       hashedPassword,
-      fullname]);
+      fullname,
+    ]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new InvariantError('User gagal ditambahkan');
     }
 

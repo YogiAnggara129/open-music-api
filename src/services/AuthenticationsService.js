@@ -10,7 +10,7 @@ class AuthenticationsService {
     const query = 'INSERT INTO authentications (token) VALUES ($1) RETURNING token';
     const result = await this._pool.query(query, [refreshToken]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new InvariantError('Token gagal ditambahkan');
     }
 
@@ -21,7 +21,7 @@ class AuthenticationsService {
     const query = 'SELECT token FROM authentications WHERE token = $1';
     const result = await this._pool.query(query, [refreshToken]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new InvariantError('Refresh token tidak valid');
     }
 
@@ -32,7 +32,7 @@ class AuthenticationsService {
     const query = 'DELETE FROM authentications WHERE token = $1 RETURNING token';
     const result = await this._pool.query(query, [refreshToken]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new InvariantError('Refresh token tidak valid');
     }
 

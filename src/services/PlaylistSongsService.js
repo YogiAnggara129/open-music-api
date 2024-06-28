@@ -13,7 +13,7 @@ class PlaylistSongsService {
     const query = 'SELECT id FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2';
     const result = await this._pool.query(query, [id, songId]);
 
-    if (result.rows.length > 0) {
+    if (result.rowCount > 0) {
       throw new InvariantError('Lagu sudah ditambahkan ke playlist');
     }
   }
@@ -28,9 +28,15 @@ class PlaylistSongsService {
 
       const psaId = `playlist_song_activity-${nanoid(16)}`;
       const psaQuery = 'INSERT INTO playlist_song_activities (id, playlist_id, song_id, user_id, action) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-      const psaResult = await client.query(psaQuery, [psaId, id, songId, userId, action]);
+      const psaResult = await client.query(psaQuery, [
+        psaId,
+        id,
+        songId,
+        userId,
+        action,
+      ]);
 
-      if (psaResult.rows.length === 0) {
+      if (!psaResult.rowCount) {
         throw new InvariantError('Lagu gagal ditambahkan ke playlist');
       }
       await client.query('COMMIT');
@@ -59,7 +65,7 @@ class PlaylistSongsService {
           const psId = `playlist_song-${nanoid(16)}`;
           const result = await client.query(query, [psId, id, songId]);
 
-          if (result.rows.length === 0) {
+          if (!result.rowCount) {
             throw new NotFoundError('Lagu gagal ditambahkan ke playlist');
           }
         } catch (e) {
@@ -97,7 +103,7 @@ class PlaylistSongsService {
       songsResultAsync,
     ]);
 
-    if (playlistResult.rows.length === 0) {
+    if (!playlistResult.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
@@ -114,7 +120,7 @@ class PlaylistSongsService {
         const query = 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id';
         const result = await client.query(query, [id, songId]);
 
-        if (result.rows.length === 0) {
+        if (!result.rowCount) {
           throw new InvariantError('Lagu gagal dihapus');
         }
       },

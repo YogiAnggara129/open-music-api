@@ -11,20 +11,29 @@ class PlaylistsService {
 
   async getRole({ id, userId }) {
     const checkAvailabilityQuery = 'SELECT id FROM playlists WHERE id = $1';
-    const checkAvailabilityResult = await this._pool.query(checkAvailabilityQuery, [id]);
-    if (checkAvailabilityResult.rows.length === 0) {
+    const checkAvailabilityResult = await this._pool.query(
+      checkAvailabilityQuery,
+      [id],
+    );
+    if (!checkAvailabilityResult.rowCount) {
       throw new NotFoundError('Playlist tidak valid');
     }
 
     const checkOwnerQuery = 'SELECT id FROM playlists WHERE id = $1 AND owner = $2';
-    const checkOwnerResult = await this._pool.query(checkOwnerQuery, [id, userId]);
-    if (checkOwnerResult.rows.length !== 0) {
+    const checkOwnerResult = await this._pool.query(checkOwnerQuery, [
+      id,
+      userId,
+    ]);
+    if (checkOwnerResult.rowCount !== 0) {
       return PlaylistRole.owner;
     }
 
     const checkCollaboratorQuery = 'SELECT id FROM collaborations WHERE playlist_id = $1 AND user_id = $2';
-    const checkCollaboratorResult = await this._pool.query(checkCollaboratorQuery, [id, userId]);
-    if (checkCollaboratorResult.rows.length !== 0) {
+    const checkCollaboratorResult = await this._pool.query(
+      checkCollaboratorQuery,
+      [id, userId],
+    );
+    if (checkCollaboratorResult.rowCount !== 0) {
       return PlaylistRole.collaborator;
     }
 
@@ -35,7 +44,7 @@ class PlaylistsService {
     const query = 'SELECT name FROM playlists WHERE name = $1 AND owner = $2';
     const result = await this._pool.query(query, [name, owner]);
 
-    if (result.rows.length > 0) {
+    if (result.rowCount > 0) {
       throw new InvariantError('Playlist telah digunakan');
     }
   }
@@ -69,7 +78,7 @@ class PlaylistsService {
     const query = 'DELETE FROM playlists WHERE id = $1 RETURNING id';
     const result = await this._pool.query(query, [id]);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
   }
