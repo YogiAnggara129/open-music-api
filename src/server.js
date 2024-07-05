@@ -29,6 +29,11 @@ const collaborations = require('./api/collaborations');
 const CollaborationsService = require('./services/CollaborationsService');
 const CollaborationsValidator = require('./validator/collaborations');
 
+const exportsApi = require('./api/exports');
+const ExportsValidator = require('./validator/exports');
+
+const ProducersService = require('./services/ProducerService');
+
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
@@ -107,7 +112,11 @@ const init = async () => {
     },
     {
       plugin: playlists,
-      options: { playlistsService, playlistSongsService, validator: PlaylistsValidator },
+      options: {
+        playlistsService,
+        playlistSongsService,
+        validator: PlaylistsValidator,
+      },
     },
     {
       plugin: collaborations,
@@ -117,13 +126,22 @@ const init = async () => {
         validator: CollaborationsValidator,
       },
     },
+    {
+      plugin: exportsApi,
+      options: {
+        service: ProducersService,
+        validator: ExportsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
     if (response instanceof Error) {
-      console.error(`ERROR: ${response.message} > [${request.method}] ${request.url.href} - ${response.statusCode}`);
+      console.error(
+        `ERROR: ${response.message} > [${request.method}] ${request.url.href} - ${response.statusCode}`,
+      );
       // penanganan client error secara internal.
       if (response instanceof ClientError) {
         const newResponse = h.response({

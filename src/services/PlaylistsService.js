@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const { PlaylistRole } = require('../utils');
+const ClientError = require('../exceptions/ClientError');
 
 class PlaylistsService {
   constructor() {
@@ -40,27 +41,25 @@ class PlaylistsService {
     return null;
   }
 
-  async verifyNewPlaylist({ name, owner }) {
-    const query = 'SELECT name FROM playlists WHERE name = $1 AND owner = $2';
-    const result = await this._pool.query(query, [name, owner]);
-
-    if (result.rowCount > 0) {
-      throw new InvariantError('Playlist telah digunakan');
-    }
-  }
-
   async addPlaylist({ name, owner }) {
-    await this.verifyNewPlaylist({ name, owner });
+    try {
+      const id = `playlist-${nanoid(16)}`;
+      const query = 'INSERT INTO playlists (id, name, owner) VALUES ($1, $2, $3) RETURNING id';
+      const result = await this._pool.query(query, [id, name, owner]);
 
-    const id = `playlist-${nanoid(16)}`;
-    const query = 'INSERT INTO playlists (id, name, owner) VALUES ($1, $2, $3) RETURNING id';
-    const result = await this._pool.query(query, [id, name, owner]);
+      if (!result.rows[0].id) {
+        throw new InvariantError('Playlist gagal ditambahkan');
+      }
 
-    if (!result.rows[0].id) {
-      throw new InvariantError('Playlist gagal ditambahkan');
+      return result.rows[0].id;
+    } catch (e) {
+      if (e instanceof ClientError) {
+        throw e;
+      } else if (e.code === '23505') {
+        throw new InvariantError('Playlist telah digunakan');
+      }
+      throw new InvariantError('Terjadi kesalahan pada server');
     }
-
-    return result.rows[0].id;
   }
 
   async getPlaylists({ userId }) {

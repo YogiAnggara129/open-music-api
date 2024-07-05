@@ -9,15 +9,6 @@ class PlaylistSongsService {
     this._pool = new Pool();
   }
 
-  async verifyNewPlaylistSongs({ id, songId }) {
-    const query = 'SELECT id FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2';
-    const result = await this._pool.query(query, [id, songId]);
-
-    if (result.rowCount > 0) {
-      throw new InvariantError('Lagu sudah ditambahkan ke playlist');
-    }
-  }
-
   async _recordActivity({
     id, songId, userId, action, actionFunc,
   }) {
