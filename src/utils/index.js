@@ -10,6 +10,13 @@ const mapDBToModelSong = (e) => ({
   albumId: e.album_id,
 });
 
+const mapDBToModelAlbum = (e) => ({
+  id: e.id,
+  name: e.name,
+  year: e.year,
+  cover: `http://${process.env.HOST_API}:${process.env.PORT_API}/albums/covers/${e.cover}`,
+});
+
 const validateData = (payload, schema) => {
   const validationResult = schema.validate(payload);
   if (validationResult.error) {
@@ -24,6 +31,7 @@ const PlaylistRole = {
 
 module.exports = {
   mapDBToModelSong,
+  mapDBToModelAlbum,
   validateData,
   PlaylistRole,
 };

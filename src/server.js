@@ -1,6 +1,8 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const Inert = require('@hapi/inert');
 
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -35,6 +37,8 @@ const ExportsValidator = require('./validator/exports');
 const ProducersService = require('./services/ProducerService');
 
 const ClientError = require('./exceptions/ClientError');
+const StorageService = require('./services/StorageService');
+const { localStoragePath } = require('./constants');
 
 const init = async () => {
   const usersService = new UsersService();
@@ -44,6 +48,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService();
   const playlistSongsService = new PlaylistSongsService();
   const collaborationsService = new CollaborationsService();
+  const storageService = new StorageService(localStoragePath);
 
   const server = Hapi.server({
     host: process.env.HOST_API,
@@ -59,6 +64,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -100,6 +108,7 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storage: storageService,
         validator: AlbumsValidator,
       },
     },

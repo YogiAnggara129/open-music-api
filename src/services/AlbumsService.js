@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const NotFoundError = require('../exceptions/NotFoundError');
 const InvariantError = require('../exceptions/InvariantError');
+const { mapDBToModelAlbum } = require('../utils');
 require('dotenv').config();
 
 class AlbumsService {
@@ -22,7 +23,7 @@ class AlbumsService {
   }
 
   async getAlbumById({ id }) {
-    const albumQuery = 'SELECT id, name, year FROM albums WHERE id = $1';
+    const albumQuery = 'SELECT id, name, cover, year FROM albums WHERE id = $1';
     const albumResultAsync = this._pool.query(albumQuery, [id]);
 
     const songsQuery = 'SELECT id, title, performer FROM songs WHERE album_id = $1';
@@ -38,7 +39,7 @@ class AlbumsService {
     }
 
     return {
-      ...albumResult.rows[0],
+      ...mapDBToModelAlbum(albumResult.rows[0]),
       songs: songsResult.rows,
     };
   }
@@ -59,6 +60,24 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus');
     }
+  }
+
+  async uploadCover({ id, cover }) {
+    const query = `
+      UPDATE albums x
+      SET    cover = $1
+      FROM   albums y
+      WHERE  x.id = y.id
+      AND    x.id = $2
+      RETURNING y.cover AS old_cover;
+    `;
+    const result = await this._pool.query(query, [cover, id]);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Album gagal diubah');
+    }
+
+    return result.rows[0].old_cover;
   }
 }
 

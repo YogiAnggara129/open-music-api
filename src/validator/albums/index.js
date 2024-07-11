@@ -6,6 +6,10 @@ const AlbumsValidator = {
     payload,
     schema.AlbumPayloadSchema,
   ),
+  validateAlbumCoverHeader: (headers) => validateData(
+    headers,
+    schema.AlbumCoverHeaderSchema,
+  ),
 };
 
 module.exports = AlbumsValidator;
