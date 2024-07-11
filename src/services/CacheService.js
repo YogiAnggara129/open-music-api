@@ -20,8 +20,8 @@ class CacheService {
       await this._client.set(key, value, {
         EX: expirationInSecond,
       });
-    } catch (error) {
-      throw ServerError('Terjadi Kesalahan pada server');
+    } catch (e) {
+      throw new ServerError();
     }
   }
 
@@ -35,7 +35,7 @@ class CacheService {
     try {
       return this._client.del(key);
     } catch (e) {
-      throw ServerError('Terjadi Kesalahan pada server');
+      throw new ServerError();
     }
   }
 }

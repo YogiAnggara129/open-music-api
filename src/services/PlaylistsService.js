@@ -4,6 +4,7 @@ const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const { PlaylistRole } = require('../utils');
 const ClientError = require('../exceptions/ClientError');
+const ServerError = require('../exceptions/ServerError');
 
 class PlaylistsService {
   constructor() {
@@ -58,7 +59,7 @@ class PlaylistsService {
       } else if (e.code === '23505') {
         throw new InvariantError('Playlist telah digunakan');
       }
-      throw new InvariantError('Terjadi kesalahan pada server');
+      throw new ServerError();
     }
   }
 

@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const ClientError = require('../exceptions/ClientError');
 const NotFoundError = require('../exceptions/NotFoundError');
+const ServerError = require('../exceptions/ServerError');
 
 class CollaborationsService {
   constructor() {
@@ -30,7 +31,7 @@ class CollaborationsService {
           throw new NotFoundError('User tidak valid');
         }
       }
-      throw new InvariantError('Terjadi kesalahan pada server');
+      throw new ServerError();
     }
   }
 

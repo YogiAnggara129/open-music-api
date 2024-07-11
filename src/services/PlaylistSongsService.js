@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const ClientError = require('../exceptions/ClientError');
 const NotFoundError = require('../exceptions/NotFoundError');
+const ServerError = require('../exceptions/ServerError');
 
 class PlaylistSongsService {
   constructor() {
@@ -38,7 +39,7 @@ class PlaylistSongsService {
       if (e instanceof ClientError) {
         throw e;
       }
-      throw new InvariantError('Terjadi kesalahan pada server');
+      throw new ServerError();
     } finally {
       client.release();
     }
@@ -69,7 +70,7 @@ class PlaylistSongsService {
               throw new NotFoundError('Playlist tidak valid');
             }
           }
-          throw new InvariantError('Terjadi kesalahan pada server');
+          throw new ServerError();
         }
       },
     });
@@ -121,9 +122,17 @@ class PlaylistSongsService {
   async getPlaylistSongActivitiesById({ id }) {
     try {
       const query = `
-      SELECT * FROM playlist_song_activities psa
-      LEFT JOIN users u ON u.id = psa.user_id
-      LEFT JOIN songs s ON s.id = psa.song_id
+      SELECT 
+        u.username username,
+        s.title as title,
+        psa.action action,
+        psa.time time
+      FROM 
+        playlist_song_activities psa
+      LEFT JOIN 
+        users u ON u.id = psa.user_id
+      LEFT JOIN 
+        songs s ON s.id = psa.song_id
       WHERE playlist_id = $1`;
       const result = await this._pool.query(query, [id]);
       return result.rows;
@@ -133,7 +142,7 @@ class PlaylistSongsService {
       } else if (e.code === '23503') {
         throw new NotFoundError('Playlist tidak valid');
       }
-      throw new InvariantError('Terjadi kesalahan pada server');
+      throw new ServerError();
     }
   }
 }
