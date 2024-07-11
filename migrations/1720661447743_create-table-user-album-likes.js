@@ -25,6 +25,10 @@ exports.up = (pgm) => {
       onUpdate: 'CASCADE',
     },
   });
+
+  pgm.addConstraint('user_album_likes', 'unique-user_album_likes-user_id-album_id', {
+    unique: ['user_id', 'album_id'],
+  });
 };
 
 /**
@@ -33,5 +37,6 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
+  pgm.dropConstraint('user_album_likes', 'unique-user_album_likes-user_id-album_id');
   pgm.dropTable('user_album_likes');
 };
