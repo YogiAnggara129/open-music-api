@@ -42,17 +42,19 @@ const ProducersService = require('./services/ProducerService');
 const ClientError = require('./exceptions/ClientError');
 const StorageService = require('./services/StorageService');
 const { localStoragePath } = require('./constants');
+const CacheService = require('./services/CacheService');
 
 const init = async () => {
+  const storageService = new StorageService(localStoragePath);
+  const cacheService = new CacheService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const albumsService = new AlbumsService();
-  const albumLikesService = new AlbumLikesService();
+  const albumLikesService = new AlbumLikesService({ cacheService });
   const songService = new SongsService();
   const playlistsService = new PlaylistsService();
   const playlistSongsService = new PlaylistSongsService();
   const collaborationsService = new CollaborationsService();
-  const storageService = new StorageService(localStoragePath);
 
   const server = Hapi.server({
     host: process.env.HOST_API,
