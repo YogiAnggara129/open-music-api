@@ -90,9 +90,7 @@ class PlaylistHandler {
   async getPlaylistSongsHandler(request, h) {
     const { id } = request.params;
     const { id: userId } = request.auth.credentials;
-    const playlist = await this._playlistSongsService.getPlaylistSongsById({
-      id,
-    });
+    const playlist = await this._playlistSongsService.getPlaylistSongsById({ id });
     const role = await this._playlistsService.getRole({ id, userId });
     if (role !== PlaylistRole.owner && role !== PlaylistRole.collaborator) {
       throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');

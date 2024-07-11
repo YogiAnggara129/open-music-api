@@ -18,6 +18,9 @@ const albums = require('./api/albums');
 const AlbumsService = require('./services/AlbumsService');
 const AlbumsValidator = require('./validator/albums');
 
+const albumLikes = require('./api/album_likes');
+const AlbumLikesService = require('./services/AlbumLikesService');
+
 const songs = require('./api/songs');
 const SongsService = require('./services/SongsService');
 const SongsValidator = require('./validator/songs');
@@ -44,6 +47,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const albumsService = new AlbumsService();
+  const albumLikesService = new AlbumLikesService();
   const songService = new SongsService();
   const playlistsService = new PlaylistsService();
   const playlistSongsService = new PlaylistSongsService();
@@ -110,6 +114,12 @@ const init = async () => {
         service: albumsService,
         storage: storageService,
         validator: AlbumsValidator,
+      },
+    },
+    {
+      plugin: albumLikes,
+      options: {
+        service: albumLikesService,
       },
     },
     {
