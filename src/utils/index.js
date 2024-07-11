@@ -14,7 +14,7 @@ const mapDBToModelAlbum = (e) => ({
   id: e.id,
   name: e.name,
   year: e.year,
-  cover: `http://${process.env.HOST_API}:${process.env.PORT_API}/albums/covers/${e.cover}`,
+  coverUrl: e.cover !== null ? `http://${process.env.HOST_API}:${process.env.PORT_API}/albums/covers/${e.cover}` : null,
 });
 
 const validateData = (payload, schema) => {
