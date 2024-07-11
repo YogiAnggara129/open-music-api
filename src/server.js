@@ -37,7 +37,7 @@ const CollaborationsValidator = require('./validator/collaborations');
 const exportsApi = require('./api/exports');
 const ExportsValidator = require('./validator/exports');
 
-const ProducersService = require('./services/ProducerService');
+const ProducerService = require('./services/ProducerService');
 
 const ClientError = require('./exceptions/ClientError');
 const StorageService = require('./services/StorageService');
@@ -150,7 +150,8 @@ const init = async () => {
     {
       plugin: exportsApi,
       options: {
-        service: ProducersService,
+        producerService: ProducerService,
+        playlistsService,
         validator: ExportsValidator,
       },
     },
